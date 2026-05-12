@@ -37,7 +37,7 @@ uvx hatch build
 # Step 4: Publish to PyPI using uv (NOT uvx hatch publish)
 echo -e "${YELLOW}→ Publishing to PyPI...${NC}"
 if [ -d "dist" ] && [ "$(ls -A dist)" ]; then
-    uv publish --index pypi dist/*
+    uv publish dist/*
 else
     echo -e "${RED}❌ No distribution files found in dist/${NC}"
     exit 1
