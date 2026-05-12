@@ -29,13 +29,13 @@ source .venv/bin/activate # On Linux/macOS
 
 Once your virtual environment is activated, install the plugin:
 
-From PyPI (once published):
+From PyPI:
 ```shell
-pip install tags-macros-plugin
+pip install vexy-mkdocs-tags
 ```
 Or, for the latest development version from GitHub:
 ```shell
-pip install git+https://github.com/jldiaz/mkdocs-plugin-tags.git
+pip install git+https://github.com/vexyart/vexy-mkdocs-tags.git
 ```
 Alternatively, if you have cloned the repository locally:
 ```shell

@@ -239,3 +239,6 @@ fabric.properties
 .idea/modules.xml
 .idea/scssLintPlugin.xml
 .idea/vcs.xml
+
+# hatch-vcs generated version file
+tags/__version__.py
