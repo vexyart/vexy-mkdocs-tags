@@ -1,0 +1,12 @@
+# this_file: docs/_config.yml
+title: vexy-mkdocs-tags
+description: MkDocs plugin that turns front-matter tags into a grouped tags index page.
+theme: null
+remote_theme: just-the-docs/just-the-docs
+url: https://vexyart.github.io/vexy-mkdocs-tags
+color_scheme: light
+aux_links:
+  GitHub: https://github.com/vexyart/vexy-mkdocs-tags
+  PyPI: https://pypi.org/project/vexy-mkdocs-tags/
+plugins:
+  - jekyll-remote-theme

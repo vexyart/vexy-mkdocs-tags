@@ -241,4 +241,4 @@ fabric.properties
 .idea/vcs.xml
 
 # hatch-vcs generated version file
-tags/__version__.py
+src/tags/_version.py

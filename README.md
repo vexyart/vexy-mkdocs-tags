@@ -1,100 +1,78 @@
-# Tags
+# vexy-mkdocs-tags
 
-Support for tags in the yaml-metadata in the header of markdown files.
+Add `tags: [python, cli]` to a page's front matter. A Tags page appears, listing every page under each tag.
 
-Extracts this metadata and creates a "Tags" page which lists all tags and all pages for each tag.
+This MkDocs plugin scans the YAML header of each Markdown file, collects the `tags`, and generates one index page grouping pages by tag. Theme-agnostic, no JavaScript, plain Markdown output.
 
-## Installation
+## Visual
 
-It's recommended to use a virtual environment for Python projects. You can create one using `venv` or, for a faster experience, `uv`.
+![One luggage tag sprouting a little tree of smaller tags](docs/assets/icon.png)
 
-**Using `uv` (recommended):**
-```shell
-# Install uv (if you haven't already)
-# See https://github.com/astral-sh/uv for installation instructions
-# e.g., pip install uv
+## Quick start
 
-# Create a virtual environment and activate it
-uv venv
-source .venv/bin/activate # On Linux/macOS
-# .venv\Scripts\activate # On Windows
-```
-
-**Using `venv`:**
-```shell
-python -m venv .venv
-source .venv/bin/activate # On Linux/macOS
-# .venv\Scripts\activate # On Windows
-```
-
-Once your virtual environment is activated, install the plugin:
-
-From PyPI:
 ```shell
 pip install vexy-mkdocs-tags
 ```
-Or, for the latest development version from GitHub:
-```shell
-pip install git+https://github.com/vexyart/vexy-mkdocs-tags.git
-```
-Alternatively, if you have cloned the repository locally:
-```shell
-pip install .
-```
 
-## Quick Demo
+Enable it in `mkdocs.yml`:
 
-After installing the plugin, you can create a new documentation folder:
-
-```shell
-$ mkdocs new demo
-```
-
-Edit the `.md` files to add initial metadata. Currently, the metadata has to be enclosed in `---` lines, and must include a `title:` property (otherwise the page will appear as "untitled" in the tags page). So, for example:
-
-```
-$ cd demo
-$ cd docs
-$ cat > index.md
----
-title: Welcome
-tags:
- - testing
- - unimportant
----
-# Welcome to MkDocs
-
-For full documentation visit [mkdocs.org](https://mkdocs.org).
-
-^D
-```
-
-Edit `mkdocs.yml` to include this plugin:
-
-```
+```yaml
 plugins:
+  - search
+  - tags
+```
+
+Tag any page:
+
+```markdown
+---
+title: Getting started
+tags:
+  - intro
+  - python
+---
+# Getting started
+```
+
+Run `mkdocs serve`. A `/tags` page appears in the nav, grouping pages by tag.
+
+![Tags page screenshot](docs/assets/screenshot.png)
+
+## What it generates
+
+On each build the plugin writes a Markdown file — `aux/tags.md` by default — that MkDocs renders like any other page:
+
+```markdown
+# Contents grouped by tag
+
+## <span class="tag">intro</span>
+  * [Getting started](getting-started.md)
+
+## <span class="tag">python</span>
+  * [Getting started](getting-started.md)
+```
+
+Tags sort case-insensitively; pages under each tag sort by title, so the output is stable across builds. The file lives outside `docs/` so writing it never retriggers `mkdocs serve`. Style the `h2.tag` element with CSS to taste.
+
+## Options
+
+| Option | Default | What it does |
+|---|---|---|
+| `tags_filename` | `tags.md` | Name of the generated file. |
+| `tags_folder` | `aux` | Where the file is written. Relative paths resolve beside `docs/`; absolute paths work too. Missing folders are created. |
+| `tags_template` | *(built-in)* | Path to your own Markdown + Jinja2 template. Omit to use the packaged one. |
+
+```yaml
+plugins:
+  - search
   - tags:
+      tags_folder: /tmp/mysite/aux
+      tags_template: docs/theme/tags.md.template
 ```
 
-Run the server:
+## Custom template
 
-```
-$ mkdocs serve --livereload
-```
-
-Visit the URL `/tags` (it should appear in the nav panel). This is an auto-generated page which contains the tags as level 2 headers, and under each tag, a listing of the pages which declare that tag in the metadata section.
-
-![](doc/imgs/screenshot.png)
-
-# How it works
-
-On each build (even with `--livereload`), all the `.md` files composing the site are scanned, their "triple-dash-delimted" yaml header is extracted and parsed, and the list of tags is collected. 
-
-After that, a new temporal file is created (by default in `aux/tags.md`, but this is customizable) which contains the generated tags page, in markdown format. This file is not in the documents folder to avoid retriggering a build, but it is added to the list of files to be converted to HTML by mkdocs.
-
-# Customization
-
-The layout of the tags page is a markdown file with jinja2 embedded contents. The package provides such a template by default, with the following content:
+The template is Markdown with embedded Jinja2. It receives `tags`, a list of `(tag, pages)` pairs. Each `page` carries all of its front matter plus a `.filename` attribute (source path relative to `docs/`). A `slugify` filter is available for building anchors. The packaged default:
 
 ```markdown
 ---
@@ -102,38 +80,34 @@ title: Tags
 ---
 # Contents grouped by tag
 
-{% for tag, pages in tags %}
+{% raw %}{% for tag, pages in tags %}
 
 ## <span class="tag">{{tag}}</span>
-{%  for page in pages %}
+{% for page in pages %}
   * [{{page.title}}]({{page.filename}})
 {% endfor %}
 
-{% endfor %}
+{% endfor %}{% endraw %}
 ```
 
-You can style the `h2.tag` element via CSS, if you want.
+## Versus Material's built-in tags
 
-You can also provide your own markdown template, in case that you want a different layout or metadata. The `page` object contains all the metadata in a mkdocs page, and in addition a `.filename` attribute, which contains the file name of the source of the page (relative to the docs folder), which can be used to link to that page.
+MkDocs Material ships its own `tags` plugin that renders inline tag chips on each page and requires the Material theme. `vexy-mkdocs-tags` is theme-agnostic and produces one plain-Markdown index instead — useful off Material, or when you want a single grep-friendly list of every tag. The two use the same `tags:` front-matter key, so migrating in either direction costs nothing.
 
-The full customizable options for the plugin are:
+## Development
 
-* `tags_folder`: Folder in which the auxiliar tags markdown file will be written (`aux` by default, relative to the folder in which `mkdocs` is invoked). It can be set to an absolute path, such as `/tmp/mysite/aux`. The required folders are created.
-* `tags_template`: path to the file which contains the markdown-jinja template for the tags page. It is `None` by default, which means that the package-provided template is used. It can be an absolute path, or relative to the folder in which `mkdocs` is run.
-
-For example, this can be put at `mkdocs.yaml`:
-
-```
-plugins:
-    - search
-    - tags:
-        tags_folder: /tmp/mysite/aux
-        tags_template: docs/theme/tags.md.template
+```shell
+uv venv && source .venv/bin/activate
+uv pip install -e ".[dev]"
+pytest            # unit + real mkdocs build integration test
+ruff check src tests
+mypy src
 ```
 
-# TODO
+## Credits
 
-* Remove the requirement of having a `title:` metadata in the YAML header (take the title of the page from other place if absent)
-* Allow for yaml metadata which is not "triple-dash" delimited.
-* Better integration with themes (tested with Material, looks good)
-* Make visible the tags in each page? Currently they are "invisible metadata". The author can provide a jinja2 custom "main" template which renders them from `page.meta.tags`, but perhaps it could be useful that the plugin rewrites the markdown of each page (on page load), to add this metadata as part of the "visible" markdown.
+Originally `tags-macros-plugin` by JL Diaz (MIT). Repackaged and modernized as `vexy-mkdocs-tags`.
+
+## License
+
+MIT — see [LICENSE.md](LICENSE.md).

@@ -9,7 +9,7 @@ name = "vexy-mkdocs-tags"
 dynamic = ["version"]
 description = "MkDocs plugin that processes tags in YAML front matter and generates a tags index page"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = ["mkdocs", "plugin", "python", "markdown", "tags"]
 authors = [
@@ -24,6 +24,8 @@ classifiers = [
   "License :: OSI Approved :: MIT License",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Documentation",
@@ -40,13 +42,15 @@ dev = [
   "pytest>=8.0",
   "pytest-cov>=4.1",
   "ruff>=0.6",
+  "mypy>=1.8",
+  "types-PyYAML",
 ]
 
 [project.urls]
 Homepage = "https://github.com/vexyart/vexy-mkdocs-tags"
 Repository = "https://github.com/vexyart/vexy-mkdocs-tags"
 Issues = "https://github.com/vexyart/vexy-mkdocs-tags/issues"
-Changelog = "https://github.com/vexyart/vexy-mkdocs-tags/blob/main/CHANGELOG.md"
+Changelog = "https://github.com/vexyart/vexy-mkdocs-tags/blob/master/CHANGELOG.md"
 
 [project.entry-points."mkdocs.plugins"]
 tags = "tags.plugin:TagsPlugin"
@@ -55,14 +59,14 @@ tags = "tags.plugin:TagsPlugin"
 source = "vcs"
 
 [tool.hatch.build.hooks.vcs]
-version-file = "tags/__version__.py"
+version-file = "src/tags/_version.py"
 
 [tool.hatch.build.targets.wheel]
-packages = ["tags"]
+packages = ["src/tags"]
 
 [tool.hatch.build.targets.sdist]
 include = [
-  "/tags",
+  "/src",
   "/tests",
   "/README.md",
   "/CHANGELOG.md",
@@ -70,15 +74,39 @@ include = [
 ]
 
 [tool.pytest.ini_options]
+minversion = "8.0"
+addopts = "-ra -q --color=yes"
 testpaths = ["tests"]
 filterwarnings = [
   "ignore::DeprecationWarning",
 ]
 
+[tool.coverage.run]
+source = ["src/tags"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+
 [tool.ruff]
 line-length = 100
-target-version = "py312"
+target-version = "py310"
+src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.mypy]
+python_version = "3.10"
+files = ["src"]
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[[tool.mypy.overrides]]
+module = ["mkdocs.*", "jinja2.*", "pymdownx.*", "markdown.*"]
+ignore_missing_imports = true

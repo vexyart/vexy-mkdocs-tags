@@ -1,4 +1,2 @@
-# SPDX-FileCopyrightText: 2024 Jules AI Agent
-# SPDX-License-Identifier: MIT
-
-"""Tests for the tags-macros-plugin."""
+# this_file: tests/__init__.py
+"""Test suite for vexy-mkdocs-tags."""
